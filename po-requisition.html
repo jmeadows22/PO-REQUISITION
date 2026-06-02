@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>PO Requisition — Meadows Landscapes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #2D6A4F;
+    --green-light: #D8F3DC;
+    --green-mid: #52B788;
+    --amber: #B5620A;
+    --amber-light: #FFF3CD;
+    --red: #9B2226;
+    --red-light: #FFE8E8;
+    --blue: #1A5276;
+    --blue-light: #EAF2FB;
+    --gray-50: #F8F9FA;
+    --gray-100: #F1F3F4;
+    --gray-200: #E8EAED;
+    --gray-400: #9AA0A6;
+    --gray-600: #5F6368;
+    --gray-900: #1A1A1A;
+    --border: #DDE2E7;
+    --radius: 10px;
+    --font: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--gray-50);
+    color: var(--gray-900);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .page-header {
+    background: var(--green);
+    padding: 18px 20px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-mark svg { width: 20px; height: 20px; fill: white; }
+
+  .header-text h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    line-height: 1.2;
+  }
+
+  .header-text p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 1px;
+  }
+
+  .form-container {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+
+  .card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--gray-400);
+    margin-bottom: 14px;
+  }
+
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    margin-bottom: 5px;
+  }
+
+  .req { color: #C0392B; margin-left: 2px; }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    font-family: var(--font);
+    font-size: 15px;
+    color: var(--gray-900);
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239AA0A6' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+
+  textarea { height: 72px; resize: none; line-height: 1.5; }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+  }
+
+  input.error, select.error, textarea.error {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(155,34,38,0.08);
+  }
+
+  .error-text {
+    font-size: 12px;
+    color: var(--red);
+    margin-top: 4px;
+    display: none;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .urgency-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+  .urgency-opt {
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: white;
+  }
+
+  .urgency-opt .u-label { font-size: 13px; font-weight: 500; color: var(--gray-600); display: block; }
+  .urgency-opt .u-desc { font-size: 11px; color: var(--gray-400); display: block; margin-top: 2px; }
+
+  .urgency-opt.active-routine { background: var(--green-light); border-color: var(--green-mid); }
+  .urgency-opt.active-routine .u-label { color: var(--green); }
+  .urgency-opt.active-routine .u-desc { color: var(--green-mid); }
+
+  .urgency-opt.active-priority { background: var(--amber-light); border-color: #F0A500; }
+  .urgency-opt.active-priority .u-label { color: var(--amber); }
+  .urgency-opt.active-priority .u-desc { color: #B7860B; }
+
+  .urgency-opt.active-urgent { background: var(--red-light); border-color: #E57373; }
+  .urgency-opt.active-urgent .u-label { color: var(--red); }
+  .urgency-opt.active-urgent .u-desc { color: #C0392B; }
+
+  .items-header {
+    display: grid;
+    grid-template-columns: 1fr 72px 72px 36px;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .items-header span {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-400);
+    padding: 0 2px;
+  }
+
+  .item-row {
+    display: grid;
+    grid-template-columns: 1fr 72px 72px 36px;
+    gap: 6px;
+    margin-bottom: 6px;
+    align-items: center;
+  }
+
+  .item-row input { font-size: 14px; padding: 8px 10px; }
+  .item-row input[type="number"] { text-align: center; }
+  .item-row input.unit-input { text-align: center; font-family: var(--mono); font-size: 12px; }
+
+  .remove-item {
+    width: 36px;
+    height: 36px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-400);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .remove-item:hover { border-color: #E57373; color: var(--red); background: var(--red-light); }
+
+  .add-item-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    cursor: pointer;
+    width: 100%;
+    margin-top: 4px;
+    transition: all 0.15s;
+  }
+
+  .add-item-btn:hover { border-color: var(--green-mid); color: var(--green); background: var(--green-light); }
+
+  .submit-btn {
+    width: 100%;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 15px;
+    font-family: var(--font);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s;
+    margin-top: 4px;
+  }
+
+  .submit-btn:hover { background: #1E4D39; }
+  .submit-btn:disabled { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
+
+  .err-banner {
+    background: var(--red-light);
+    border: 1px solid #FFCDD2;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--red);
+    margin-bottom: 12px;
+    display: none;
+  }
+
+  .posting-screen {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--gray-200);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .posting-screen p { color: var(--gray-600); font-size: 15px; }
+
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 50px 20px;
+  }
+
+  .success-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--green-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+
+  .success-icon svg { width: 32px; height: 32px; stroke: var(--green); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .success-screen h2 { font-size: 20px; font-weight: 600; color: var(--green); margin-bottom: 6px; }
+  .success-screen p { font-size: 14px; color: var(--gray-600); line-height: 1.6; }
+
+  .ref-badge {
+    display: inline-block;
+    background: var(--gray-100);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--gray-600);
+    margin: 14px 0 20px;
+  }
+
+  .new-req-btn {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 28px;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .new-req-btn:hover { border-color: var(--green); color: var(--green); background: var(--green-light); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="logo-mark">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C8 6 4 8 4 13a8 8 0 0016 0c0-5-4-7-8-11z"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>PO Requisition</h1>
+    <p>Meadows Landscapes · Invoices and POs</p>
+  </div>
+</div>
+
+<div class="form-container">
+
+  <div id="form-body">
+
+    <div class="card">
+      <div class="card-title">Requestor</div>
+      <div class="two-col">
+        <div class="field">
+          <label>Your name <span class="req">*</span></label>
+          <input type="text" id="req-name" placeholder="First Last" />
+          <div class="error-text" id="err-name">Required</div>
+        </div>
+        <div class="field">
+          <label>Date needed <span class="req">*</span></label>
+          <input type="date" id="req-date" />
+          <div class="error-text" id="err-date">Required</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Job &amp; Vendor</div>
+      <div class="field">
+        <label>Aspire Opportunity # <span class="req">*</span></label>
+        <input type="text" id="req-job" placeholder="e.g. OPP-00412" />
+        <div class="error-text" id="err-job">Required</div>
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label>Vendor <span class="req">*</span></label>
+          <select id="req-vendor">
+            <option value="">Select...</option>
+            <option>SiteOne</option>
+            <option>McHutchison</option>
+            <option>Ewing Irrigation</option>
+            <option>HD Supply</option>
+            <option>Home Depot</option>
+            <option>Lowe's</option>
+            <option>Other</option>
+          </select>
+          <div class="error-text" id="err-vendor">Required</div>
+        </div>
+        <div class="field">
+          <label>Account #</label>
+          <input type="text" id="req-account" placeholder="Optional" />
+        </div>
+      </div>
+      <div class="field hidden" id="f-vendor-other">
+        <label>Vendor name <span class="req">*</span></label>
+        <input type="text" id="req-vendor-other" placeholder="Enter vendor name" />
+        <div class="error-text" id="err-vendor-other">Required</div>
+      </div>
+      <div class="field">
+        <label>Deliver to <span class="req">*</span></label>
+        <select id="req-deliver">
+          <option value="">Select...</option>
+          <option>Job site</option>
+          <option>Main yard / shop</option>
+          <option>Pick up by super</option>
+        </select>
+        <div class="error-text" id="err-deliver">Required</div>
+      </div>
+      <div class="field hidden" id="f-deliver-addr">
+        <label>Job site address <span class="req">*</span></label>
+        <input type="text" id="req-deliver-addr" placeholder="Street address" />
+        <div class="error-text" id="err-deliver-addr">Required</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Urgency</div>
+      <div class="urgency-grid">
+        <div class="urgency-opt" data-val="Routine" data-cls="active-routine" onclick="selectUrgency(this)">
+          <span class="u-label">Routine</span>
+          <span class="u-desc">Standard lead time</span>
+        </div>
+        <div class="urgency-opt" data-val="Priority" data-cls="active-priority" onclick="selectUrgency(this)">
+          <span class="u-label">Priority</span>
+          <span class="u-desc">Needed soon</span>
+        </div>
+        <div class="urgency-opt" data-val="Urgent" data-cls="active-urgent" onclick="selectUrgency(this)">
+          <span class="u-label">Urgent</span>
+          <span class="u-desc">Job is waiting</span>
+        </div>
+      </div>
+      <div class="error-text" id="err-urgency" style="margin-top:6px;">Please select an urgency level</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Line Items <span class="req">*</span></div>
+      <div class="items-header">
+        <span>Description</span>
+        <span style="text-align:center;">Qty</span>
+        <span style="text-align:center;">Unit</span>
+        <span></span>
+      </div>
+      <div id="line-items"></div>
+      <div class="error-text" id="err-items" style="margin-bottom:8px;">Add at least one item</div>
+      <button class="add-item-btn" onclick="addItem()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add item
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Notes</div>
+      <div class="field">
+        <textarea id="req-notes" placeholder="Special instructions, part numbers, substitution guidance..."></textarea>
+      </div>
+    </div>
+
+    <div class="err-banner" id="err-banner">
+      Could not reach Teams. Check your connection and try again.
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitForm()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Submit Requisition
+    </button>
+
+  </div>
+
+  <div class="posting-screen" id="posting-screen">
+    <div class="spinner"></div>
+    <p>Posting to Teams...</p>
+  </div>
+
+  <div class="success-screen" id="success-screen">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>Posted to Teams</h2>
+    <p>Your requisition is live in the<br><strong>Invoices and POs</strong> channel.</p>
+    <div class="ref-badge" id="success-ref"></div>
+    <br>
+    <button class="new-req-btn" onclick="resetForm()">Submit another requisition</button>
+  </div>
+
+</div>
+
+<script>
+const WEBHOOK_URL = 'https://default9e59177e7dc64a62ad373d875301ff.bd.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ba4c5d2f985e48aea7aa00c4b8459d5d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GKs9VFkW0IdRkE_eS2_IN8oCTPeapqVPohXqiNr8WQ8';
+
+let urgencyVal = '';
+let itemCount = 0;
+
+function selectUrgency(el) {
+  document.querySelectorAll('.urgency-opt').forEach(b => {
+    b.className = 'urgency-opt';
+  });
+  el.classList.add(el.dataset.cls);
+  urgencyVal = el.dataset.val;
+  document.getElementById('err-urgency').style.display = 'none';
+}
+
+function addItem(desc='', qty='', unit='') {
+  itemCount++;
+  const id = itemCount;
+  const row = document.createElement('div');
+  row.className = 'item-row';
+  row.id = 'item-' + id;
+  row.innerHTML = `
+    <input type="text" placeholder="Item description" value="${desc}" id="idesc-${id}" />
+    <input type="number" placeholder="0" min="0" value="${qty}" id="iqty-${id}" />
+    <input type="text" placeholder="EA" value="${unit}" id="iunit-${id}" class="unit-input" />
+    <button class="remove-item" onclick="removeItem(${id})" aria-label="Remove">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  `;
+  document.getElementById('line-items').appendChild(row);
+}
+
+function removeItem(id) {
+  const el = document.getElementById('item-' + id);
+  if (el) el.remove();
+}
+
+function getItems() {
+  const rows = document.querySelectorAll('.item-row');
+  const items = [];
+  rows.forEach(row => {
+    const id = row.id.replace('item-','');
+    const desc = document.getElementById('idesc-'+id)?.value.trim();
+    const qty = document.getElementById('iqty-'+id)?.value.trim();
+    const unit = document.getElementById('iunit-'+id)?.value.trim();
+    if (desc) items.push({desc, qty, unit});
+  });
+  return items;
+}
+
+document.getElementById('req-vendor').addEventListener('change', function() {
+  document.getElementById('f-vendor-other').classList.toggle('hidden', this.value !== 'Other');
+});
+
+document.getElementById('req-deliver').addEventListener('change', function() {
+  document.getElementById('f-deliver-addr').classList.toggle('hidden', this.value !== 'Job site');
+});
+
+function setError(inputId, errId, show) {
+  const inp = document.getElementById(inputId);
+  const err = document.getElementById(errId);
+  if (inp) inp.classList.toggle('error', show);
+  if (err) err.style.display = show ? 'block' : 'none';
+}
+
+async function submitForm() {
+  let valid = true;
+  document.getElementById('err-banner').style.display = 'none';
+
+  const name = document.getElementById('req-name').value.trim();
+  const date = document.getElementById('req-date').value;
+  const job = document.getElementById('req-job').value.trim();
+  const vendor = document.getElementById('req-vendor').value;
+  const vendorOther = document.getElementById('req-vendor-other').value.trim();
+  const deliver = document.getElementById('req-deliver').value;
+  const deliverAddr = document.getElementById('req-deliver-addr').value.trim();
+  const items = getItems();
+  const notes = document.getElementById('req-notes').value.trim();
+
+  setError('req-name','err-name', !name); if (!name) valid = false;
+  setError('req-date','err-date', !date); if (!date) valid = false;
+  setError('req-job','err-job', !job); if (!job) valid = false;
+  setError('req-vendor','err-vendor', !vendor); if (!vendor) valid = false;
+  if (vendor === 'Other') { setError('req-vendor-other','err-vendor-other', !vendorOther); if (!vendorOther) valid = false; }
+  setError('req-deliver','err-deliver', !deliver); if (!deliver) valid = false;
+  if (deliver === 'Job site') { setError('req-deliver-addr','err-deliver-addr', !deliverAddr); if (!deliverAddr) valid = false; }
+  if (!urgencyVal) { document.getElementById('err-urgency').style.display = 'block'; valid = false; }
+  if (items.length === 0) { document.getElementById('err-items').style.display = 'block'; valid = false; }
+  else { document.getElementById('err-items').style.display = 'none'; }
+
+  if (!valid) return;
+
+  const vendorName = vendor === 'Other' ? vendorOther : vendor;
+  const refNum = 'REQ-' + Date.now().toString().slice(-6);
+  const neededBy = new Date(date + 'T12:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  const deliverLine = deliver === 'Job site' ? 'Job site: ' + deliverAddr : deliver;
+  const itemLines = items.map((it,i) => `${i+1}. ${it.desc}  ·  Qty: ${it.qty||'?'} ${it.unit||''}`.trim()).join('\n');
+
+  const payload = {
+    type: 'message',
+    attachments: [{
+      contentType: 'application/vnd.microsoft.card.adaptive',
+      content: {
+        '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+        type: 'AdaptiveCard',
+        version: '1.4',
+        body: [
+          { type: 'TextBlock', text: '📋 New PO Requisition — ' + refNum, weight: 'Bolder', size: 'Medium', wrap: true },
+          { type: 'FactSet', facts: [
+            { title: 'Requested by', value: name },
+            { title: 'Aspire Opp #', value: job },
+            { title: 'Vendor', value: vendorName },
+            { title: 'Needed by', value: neededBy },
+            { title: 'Deliver to', value: deliverLine },
+            { title: 'Urgency', value: urgencyVal }
+          ]},
+          { type: 'TextBlock', text: 'Line Items', weight: 'Bolder', spacing: 'Medium' },
+          { type: 'TextBlock', text: itemLines, wrap: true, fontType: 'Monospace', size: 'Small' },
+          ...(notes ? [{ type: 'TextBlock', text: 'Notes: ' + notes, wrap: true, isSubtle: true, spacing: 'Small' }] : [])
+        ],
+        msteams: { width: 'Full' }
+      }
+    }]
+  };
+
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('form-body').style.display = 'none';
+  document.getElementById('posting-screen').style.display = 'block';
+
+  try {
+    const res = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    document.getElementById('posting-screen').style.display = 'none';
+
+    if (res.ok || res.status === 202) {
+      document.getElementById('success-screen').style.display = 'block';
+      document.getElementById('success-ref').textContent = refNum + ' · ' + vendorName + ' · ' + job;
+    } else {
+      document.getElementById('form-body').style.display = 'block';
+      document.getElementById('err-banner').style.display = 'block';
+      document.getElementById('submit-btn').disabled = false;
+    }
+  } catch(e) {
+    document.getElementById('posting-screen').style.display = 'none';
+    document.getElementById('form-body').style.display = 'block';
+    document.getElementById('err-banner').style.display = 'block';
+    document.getElementById('submit-btn').disabled = false;
+  }
+}
+
+function resetForm() {
+  ['req-name','req-job','req-account','req-deliver-addr','req-vendor-other','req-notes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('error'); }
+  });
+  document.getElementById('req-date').value = '';
+  document.getElementById('req-vendor').value = '';
+  document.getElementById('req-deliver').value = '';
+  document.getElementById('f-vendor-other').classList.add('hidden');
+  document.getElementById('f-deliver-addr').classList.add('hidden');
+  document.getElementById('line-items').innerHTML = '';
+  urgencyVal = '';
+  itemCount = 0;
+  document.querySelectorAll('.urgency-opt').forEach(b => b.className = 'urgency-opt');
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('success-screen').style.display = 'none';
+  document.getElementById('form-body').style.display = 'block';
+  addItem();
+}
+
+addItem();
+</script>
+</body>
+</html>
