@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Meadows Landscapes – Inventory Count</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #2d6a4f;
+    --green-light: #e8f5ee;
+    --green-mid: #52b788;
+    --red-light: #fdecea;
+    --red: #c0392b;
+    --amber-light: #fff8e1;
+    --amber: #e67e22;
+    --gray-50: #f8f9fa;
+    --gray-100: #f1f3f5;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-600: #6c757d;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+    --white: #ffffff;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-size: 14px;
+    color: var(--gray-900);
+    background: var(--gray-100);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .app-header {
+    background: var(--green);
+    color: white;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow-md);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .app-header .logo { font-size: 22px; }
+  .app-header h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; }
+  .app-header .sub { font-size: 12px; opacity: 0.75; margin-top: 1px; }
+  .header-month { margin-left: auto; background: rgba(255,255,255,0.18); border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 500; }
+
+  /* Layout */
+  .app-body { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; background: var(--white); border-radius: var(--radius-lg); padding: 5px; box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+  .tab { flex: 1; padding: 9px 8px; cursor: pointer; border: none; background: transparent; font-size: 13px; font-weight: 500; color: var(--gray-600); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.15s; }
+  .tab:hover { background: var(--gray-100); color: var(--gray-900); }
+  .tab.active { background: var(--green); color: white; }
+  .tab i { font-size: 15px; }
+
+  /* Cards */
+  .card { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px; margin-bottom: 16px; }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--gray-800); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .card-title i { color: var(--green); font-size: 16px; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Form */
+  .form-row { display: grid; gap: 10px; margin-bottom: 10px; }
+  .form-row-3 { grid-template-columns: 2fr 1fr 1fr; }
+  .form-row-4 { grid-template-columns: 1fr 1fr 1fr auto; align-items: flex-end; }
+  label { font-size: 11px; font-weight: 600; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.4px; display: block; margin-bottom: 4px; }
+  input, select, textarea {
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--gray-900);
+    background: var(--white);
+    width: 100%;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(45,106,79,0.12); }
+  input::placeholder { color: var(--gray-400); }
+
+  /* Buttons */
+  .btn { border: 1px solid var(--gray-300); border-radius: var(--radius); padding: 8px 14px; font-size: 13px; font-weight: 500; cursor: pointer; background: var(--white); color: var(--gray-800); display: inline-flex; align-items: center; gap: 5px; transition: all 0.15s; white-space: nowrap; }
+  .btn:hover { background: var(--gray-100); border-color: var(--gray-400); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--green); color: white; border-color: var(--green); }
+  .btn-primary:hover { background: #245a41; border-color: #245a41; }
+  .btn-danger { color: var(--red); border-color: #f5c6cb; }
+  .btn-danger:hover { background: var(--red-light); }
+  .btn-sm { padding: 5px 9px; font-size: 12px; }
+  .btn-lg { padding: 11px 20px; font-size: 14px; }
+
+  /* Item list */
+  .item-list { display: flex; flex-direction: column; gap: 0; }
+  .item-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+  .item-row:last-child { border-bottom: none; }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name { font-size: 14px; font-weight: 600; color: var(--gray-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-meta { font-size: 11px; color: var(--gray-600); margin-top: 2px; }
+  .sku-badge { font-family: 'Courier New', monospace; font-size: 11px; background: var(--gray-100); border: 1px solid var(--gray-200); padding: 2px 7px; border-radius: 4px; color: var(--gray-600); white-space: nowrap; }
+
+  /* Barcode grid */
+  .bc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+  .bc-card { border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 12px 10px; text-align: center; background: white; }
+  .bc-card svg { max-width: 100%; height: auto; }
+  .bc-name { font-size: 12px; font-weight: 600; color: var(--gray-800); margin-top: 6px; line-height: 1.3; }
+  .bc-sub { font-size: 10px; color: var(--gray-600); margin-top: 2px; }
+
+  .print-hint { background: var(--amber-light); border: 1px solid #ffe082; border-radius: var(--radius); padding: 10px 14px; font-size: 12px; color: #7b5800; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+  /* Scan area */
+  .scan-card { text-align: center; padding: 24px 20px; }
+  .scan-input-wrap { position: relative; max-width: 340px; margin: 0 auto 10px; }
+  .scan-input { font-size: 20px; letter-spacing: 3px; text-align: center; font-family: 'Courier New', monospace; padding: 12px 16px; border: 2px dashed var(--gray-300); border-radius: var(--radius-lg); background: var(--gray-50); }
+  .scan-input:focus { border-color: var(--green); border-style: solid; background: white; }
+  .scan-hint { font-size: 12px; color: var(--gray-600); margin-top: 6px; }
+  .alert { border-radius: var(--radius); padding: 10px 14px; font-size: 13px; font-weight: 500; margin-top: 12px; display: none; align-items: center; gap: 8px; }
+  .alert-success { background: var(--green-light); border: 1px solid var(--green-mid); color: var(--green); }
+  .alert-danger { background: var(--red-light); border: 1px solid #f5c6cb; color: var(--red); }
+
+  /* Count table */
+  .count-table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--gray-600); border-bottom: 2px solid var(--gray-200); background: var(--gray-50); }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--gray-50); }
+  .qty-input { width: 66px; text-align: center; padding: 5px 6px; }
+  .pill { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+  .pill-counted { background: var(--green-light); color: var(--green); }
+  .pill-pending { background: var(--gray-100); color: var(--gray-600); }
+  .var-pos { color: #1e7e34; font-weight: 700; }
+  .var-neg { color: var(--red); font-weight: 700; }
+  .var-zero { color: var(--gray-600); }
+
+  /* Summary metrics */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+  .metric { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 14px 16px; text-align: center; }
+  .metric-val { font-size: 26px; font-weight: 700; color: var(--green); }
+  .metric-label { font-size: 11px; color: var(--gray-600); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 4px; }
+
+  .export-desc { font-size: 13px; color: var(--gray-600); margin-bottom: 16px; line-height: 1.6; }
+  .col-preview { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .col-tag { background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 4px; padding: 3px 8px; font-size: 11px; font-weight: 600; color: var(--gray-700); }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--gray-600); }
+  .empty-state i { font-size: 36px; color: var(--gray-300); display: block; margin-bottom: 8px; }
+  .empty-state p { font-size: 13px; }
+
+  @media (max-width: 600px) {
+    .form-row-3 { grid-template-columns: 1fr; }
+    .form-row-4 { grid-template-columns: 1fr 1fr; }
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .tab span { display: none; }
+  }
+
+  @media print {
+    .app-header, .tabs, #tab-items, #tab-count, #tab-export, .print-hint { display: none !important; }
+    #tab-barcodes { display: block !important; }
+    body { background: white; }
+    .app-body { padding: 0; max-width: 100%; }
+    .card { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo"><i class="ti ti-leaf"></i></div>
+  <div>
+    <h1>Meadows Landscapes</h1>
+    <div class="sub">Monthly Inventory Count System</div>
+  </div>
+  <div class="header-month" id="header-month">— 2026</div>
+</header>
+
+<div class="app-body">
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('items')"><i class="ti ti-package"></i><span>Items</span></button>
+    <button class="tab" onclick="switchTab('barcodes')"><i class="ti ti-barcode"></i><span>Barcodes</span></button>
+    <button class="tab" onclick="switchTab('count')"><i class="ti ti-list-check"></i><span>Count</span></button>
+    <button class="tab" onclick="switchTab('export')"><i class="ti ti-table-export"></i><span>Export</span></button>
+  </div>
+
+  <!-- ── ITEMS ── -->
+  <div id="tab-items" class="panel active">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-circle-plus"></i> Add new item</div>
+      <div class="form-row form-row-3">
+        <div><label>Item name</label><input id="f-name" placeholder="e.g. Mulch 2 cu ft bag" /></div>
+        <div><label>Category</label>
+          <select id="f-cat">
+            <option>Materials</option><option>Plants</option><option>Equipment</option><option>Supplies</option><option>Other</option>
+          </select>
+        </div>
+        <div><label>Unit</label><input id="f-unit" placeholder="bag / ea / lb" /></div>
+      </div>
+      <div class="form-row form-row-4">
+        <div><label>Expected qty</label><input id="f-exp" type="number" min="0" placeholder="0" /></div>
+        <div><label>Unit cost ($)</label><input id="f-cost" type="number" min="0" step="0.01" placeholder="0.00" /></div>
+        <div><label>Vendor / supplier</label><input id="f-vendor" placeholder="e.g. SiteOne" /></div>
+        <div><button class="btn btn-primary" onclick="addItem()"><i class="ti ti-plus"></i> Add</button></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-list"></i> Item list (<span id="item-count">0</span>)</div>
+      <div class="item-list" id="item-list">
+        <div class="empty-state"><i class="ti ti-package-off"></i><p>No items yet. Add your first item above.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BARCODES ── -->
+  <div id="tab-barcodes" class="panel">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-printer"></i> Print barcode sheet</div>
+      <div class="print-hint"><i class="ti ti-info-circle"></i> Press <strong>Ctrl+P</strong> (Windows) or <strong>⌘P</strong> (Mac) to print. Attach labels to shelves, bins, or count sheets.</div>
+      <div class="bc-grid" id="bc-grid">
+        <div class="empty-state" style="grid-column:1/-1"><i class="ti ti-barcode-off"></i><p>Add items to generate barcodes.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── COUNT ── -->
+  <div id="tab-count" class="panel">
+    <div class="card scan-card">
+      <div class="card-title" style="justify-content:center"><i class="ti ti-scan"></i> Scan or enter barcode</div>
+      <div class="scan-input-wrap">
+        <input id="scan-box" class="scan-input" placeholder="▌ scan here" autocomplete="off" />
+      </div>
+      <div class="scan-hint">Plug in a USB barcode scanner, or type the SKU and press Enter</div>
+      <div class="alert alert-success" id="alert-ok"><i class="ti ti-circle-check"></i><span id="alert-ok-msg"></span></div>
+      <div class="alert alert-danger" id="alert-err"><i class="ti ti-alert-circle"></i><span id="alert-err-msg"></span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-clipboard-list"></i> Count sheet</div>
+      <div class="count-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>SKU</th>
+              <th style="text-align:center">Expected</th>
+              <th style="text-align:center">Count</th>
+              <th style="text-align:center">Variance</th>
+              <th>Notes</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="count-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EXPORT ── -->
+  <div id="tab-export" class="panel">
+    <div class="metrics">
+      <div class="metric"><div class="metric-val" id="sum-total">0</div><div class="metric-label">Total items</div></div>
+      <div class="metric"><div class="metric-val" id="sum-counted">0</div><div class="metric-label">Counted</div></div>
+      <div class="metric"><div class="metric-val" id="sum-pending">0</div><div class="metric-label">Pending</div></div>
+      <div class="metric"><div class="metric-val" id="sum-value">$0</div><div class="metric-label">Total value</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-file-spreadsheet"></i> Export to Excel</div>
+      <p class="export-desc">Downloads a formatted <code>.xlsx</code> file named for the current month. Includes all items with counts, variances, and totals. A summary row is added at the bottom.</p>
+      <div class="col-preview">
+        <span class="col-tag">SKU</span><span class="col-tag">Item Name</span><span class="col-tag">Category</span>
+        <span class="col-tag">Unit</span><span class="col-tag">Vendor</span><span class="col-tag">Expected Qty</span>
+        <span class="col-tag">Unit Cost ($)</span><span class="col-tag">Physical Count</span><span class="col-tag">Variance</span>
+        <span class="col-tag">Total Value ($)</span><span class="col-tag">Notes</span><span class="col-tag">Status</span>
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="exportExcel()"><i class="ti ti-download"></i> Download Excel file</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-refresh"></i> Reset count data</div>
+      <p style="font-size:13px;color:var(--gray-600);margin-bottom:12px">Clears all physical counts and notes for a new month. Item list and barcodes are preserved.</p>
+      <button class="btn btn-danger" onclick="resetCounts()"><i class="ti ti-trash"></i> Reset counts for new month</button>
+    </div>
+  </div>
+
+</div><!-- /app-body -->
+
+<script>
+(function() {
+  let items = JSON.parse(localStorage.getItem('ml_inv_items') || '[]');
+  let counts = JSON.parse(localStorage.getItem('ml_inv_counts') || '{}');
+  let notes = JSON.parse(localStorage.getItem('ml_inv_notes') || '{}');
+  let skuCounter = parseInt(localStorage.getItem('ml_inv_sku') || '1000');
+
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const now = new Date();
+  const monthStr = monthNames[now.getMonth()] + ' ' + now.getFullYear();
+  document.getElementById('header-month').textContent = monthStr + ' count';
+
+  function save() {
+    localStorage.setItem('ml_inv_items', JSON.stringify(items));
+    localStorage.setItem('ml_inv_counts', JSON.stringify(counts));
+    localStorage.setItem('ml_inv_notes', JSON.stringify(notes));
+    localStorage.setItem('ml_inv_sku', String(skuCounter));
+  }
+
+  function genSKU() { skuCounter++; save(); return 'ML' + String(skuCounter).padStart(5,'0'); }
+
+  window.switchTab = function(name) {
+    const names = ['items','barcodes','count','export'];
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', names[i]===name));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-'+name).classList.add('active');
+    if (name==='barcodes') renderBarcodes();
+    if (name==='count') renderCountTable();
+    if (name==='export') renderExportSummary();
+  };
+
+  window.addItem = function() {
+    const name = document.getElementById('f-name').value.trim();
+    if (!name) { alert('Please enter an item name.'); return; }
+    items.push({
+      sku: genSKU(), name,
+      category: document.getElementById('f-cat').value,
+      unit: document.getElementById('f-unit').value.trim() || 'ea',
+      expected: parseFloat(document.getElementById('f-exp').value) || 0,
+      cost: parseFloat(document.getElementById('f-cost').value) || 0,
+      vendor: document.getElementById('f-vendor').value.trim(),
+    });
+    save();
+    ['f-name','f-unit','f-exp','f-cost','f-vendor'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-name').focus();
+    renderItems();
+  };
+
+  window.deleteItem = function(sku) {
+    if (!confirm('Remove this item from the inventory list?')) return;
+    items = items.filter(i => i.sku !== sku);
+    delete counts[sku]; delete notes[sku];
+    save(); renderItems();
+  };
+
+  function renderItems() {
+    const el = document.getElementById('item-list');
+    document.getElementById('item-count').textContent = items.length;
+    if (!items.length) {
+      el.innerHTML = '<div class="empty-state"><i class="ti ti-package-off"></i><p>No items yet. Add your first item above.</p></div>';
+      return;
+    }
+    el.innerHTML = items.map(item => `
+      <div class="item-row">
+        <div class="item-info">
+          <div class="item-name">${escHtml(item.name)}</div>
+          <div class="item-meta">
+            ${escHtml(item.category)} · ${escHtml(item.unit)}
+            ${item.vendor ? ' · ' + escHtml(item.vendor) : ''}
+            ${item.cost ? ' · $' + item.cost.toFixed(2) : ''}
+            ${item.expected ? ' · exp: ' + item.expected : ''}
+          </div>
+        </div>
+        <span class="sku-badge">${item.sku}</span>
+        <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.sku}')"><i class="ti ti-trash"></i></button>
+      </div>`).join('');
+  }
+
+  function renderBarcodes() {
+    const grid = document.getElementById('bc-grid');
+    if (!items.length) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-barcode-off"></i><p>Add items to generate barcodes.</p></div>';
+      return;
+    }
+    grid.innerHTML = items.map(item => `
+      <div class="bc-card">
+        <svg id="bc-${item.sku}"></svg>
+        <div class="bc-name">${escHtml(item.name)}</div>
+        <div class="bc-sub">${item.sku}${item.vendor ? ' · ' + escHtml(item.vendor) : ''} · ${escHtml(item.unit)}</div>
+      </div>`).join('');
+    items.forEach(item => {
+      try {
+        JsBarcode('#bc-'+item.sku, item.sku, { format:'CODE128', width:1.6, height:52, displayValue:true, fontSize:11, margin:4 });
+      } catch(e) {}
+    });
+  }
+
+  function renderCountTable() {
+    const tbody = document.getElementById('count-tbody');
+    if (!items.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="ti ti-clipboard-off"></i><p>No items added yet.</p></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = items.map(item => {
+      const c = counts[item.sku];
+      const hasCnt = c !== undefined;
+      const exp = item.expected || 0;
+      let varText = '—', varClass = 'var-zero';
+      if (hasCnt && exp > 0) {
+        const diff = c - exp;
+        varText = (diff > 0 ? '+' : '') + diff;
+        varClass = diff > 0 ? 'var-pos' : diff < 0 ? 'var-neg' : 'var-zero';
+      }
+      return `<tr>
+        <td style="font-weight:600">${escHtml(item.name)}</td>
+        <td><span class="sku-badge">${item.sku}</span></td>
+        <td style="text-align:center;color:var(--gray-600)">${exp || '—'}</td>
+        <td style="text-align:center">
+          <input type="number" min="0" class="qty-input" value="${hasCnt ? c : ''}" placeholder="—"
+            onchange="updateCount('${item.sku}', this.value)" />
+        </td>
+        <td style="text-align:center" class="${varClass}" id="var-${item.sku}">${varText}</td>
+        <td>
+          <input type="text" value="${escHtml(notes[item.sku]||'')}" placeholder="optional"
+            style="font-size:12px;padding:4px 8px"
+            onchange="updateNote('${item.sku}', this.value)" />
+        </td>
+        <td><span class="pill ${hasCnt ? 'pill-counted' : 'pill-pending'}" id="cstatus-${item.sku}">
+          ${hasCnt ? '<i class="ti ti-check"></i> counted' : 'pending'}
+        </span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  window.updateCount = function(sku, val) {
+    const item = items.find(i => i.sku === sku);
+    if (val === '' || val === null) { delete counts[sku]; }
+    else { counts[sku] = parseInt(val) || 0; }
+    save();
+    const badge = document.getElementById('cstatus-'+sku);
+    const varEl = document.getElementById('var-'+sku);
+    const has = counts[sku] !== undefined;
+    if (badge) {
+      badge.innerHTML = has ? '<i class="ti ti-check"></i> counted' : 'pending';
+      badge.className = 'pill ' + (has ? 'pill-counted' : 'pill-pending');
+    }
+    if (varEl && item) {
+      const exp = item.expected || 0;
+      if (has && exp > 0) {
+        const diff = counts[sku] - exp;
+        varEl.textContent = (diff > 0 ? '+' : '') + diff;
+        varEl.className = diff > 0 ? 'var-pos' : diff < 0 ? 'var-neg' : 'var-zero';
+      } else { varEl.textContent = '—'; varEl.className = 'var-zero'; }
+    }
+  };
+
+  window.updateNote = function(sku, val) {
+    if (val.trim()) notes[sku] = val.trim(); else delete notes[sku];
+    save();
+  };
+
+  // Scan box
+  const scanBox = document.getElementById('scan-box');
+  scanBox.addEventListener('keydown', e => { if (e.key==='Enter') handleScan(scanBox.value.trim()); });
+  scanBox.addEventListener('input', () => { if (scanBox.value.trim().length >= 7) handleScan(scanBox.value.trim()); });
+
+  function handleScan(sku) {
+    if (!sku) return;
+    const item = items.find(i => i.sku===sku);
+    showAlert(null);
+    if (!item) {
+      showAlert('err', `SKU "${sku}" not found in inventory list.`);
+      scanBox.value = ''; return;
+    }
+    const qty = prompt(`Item: ${item.name}${item.expected ? '\nExpected: '+item.expected+' '+item.unit : ''}\n\nEnter physical count:`);
+    if (qty === null) { scanBox.value = ''; return; }
+    const n = parseInt(qty);
+    if (isNaN(n) || n < 0) { alert('Please enter a valid number.'); scanBox.value=''; return; }
+    const noteVal = prompt(`Notes for "${item.name}" (optional — leave blank and click OK to skip):`);
+    counts[item.sku] = n;
+    if (noteVal && noteVal.trim()) notes[item.sku] = noteVal.trim();
+    save();
+    let varStr = '';
+    if (item.expected > 0) { const d = n - item.expected; varStr = `  (variance: ${d>=0?'+':''}${d})`; }
+    showAlert('ok', `✓ ${item.name}: ${n} ${item.unit}${varStr}`);
+    scanBox.value = '';
+    renderCountTable();
+    setTimeout(() => showAlert(null), 4000);
+  }
+
+  function showAlert(type, msg) {
+    const ok = document.getElementById('alert-ok');
+    const err = document.getElementById('alert-err');
+    ok.style.display = 'none'; err.style.display = 'none';
+    if (type==='ok') { document.getElementById('alert-ok-msg').textContent = msg; ok.style.display = 'flex'; }
+    if (type==='err') { document.getElementById('alert-err-msg').textContent = msg; err.style.display = 'flex'; }
+  }
+
+  function renderExportSummary() {
+    const total = items.length;
+    const counted = items.filter(i => counts[i.sku] !== undefined).length;
+    const totalVal = items.reduce((s,i) => s + (counts[i.sku]!==undefined && i.cost ? counts[i.sku]*i.cost : 0), 0);
+    document.getElementById('sum-total').textContent = total;
+    document.getElementById('sum-counted').textContent = counted;
+    document.getElementById('sum-pending').textContent = total - counted;
+    document.getElementById('sum-value').textContent = '$' + totalVal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+
+  window.exportExcel = function() {
+    if (!items.length) { alert('No items to export.'); return; }
+    const headers = ['SKU','Item Name','Category','Unit','Vendor','Expected Qty','Unit Cost ($)','Physical Count','Variance','Total Value ($)','Notes','Status'];
+    const rows = items.map(item => {
+      const c = counts[item.sku];
+      const hasCnt = c !== undefined;
+      const exp = item.expected || 0;
+      const variance = (hasCnt && exp) ? c - exp : '';
+      const totalVal = (hasCnt && item.cost) ? parseFloat((c * item.cost).toFixed(2)) : '';
+      return [item.sku, item.name, item.category, item.unit, item.vendor||'', exp||'', item.cost||'', hasCnt?c:'', variance, totalVal, notes[item.sku]||'', hasCnt?'Counted':'Pending'];
+    });
+    const totalVal = items.reduce((s,i)=>s+(counts[i.sku]!==undefined&&i.cost?counts[i.sku]*i.cost:0),0);
+    const countedN = items.filter(i=>counts[i.sku]!==undefined).length;
+    const wsData = [
+      ['Meadows Landscapes – Monthly Inventory Count'],
+      ['Count Period: ' + monthStr],
+      ['Exported: ' + new Date().toLocaleString()],
+      [],
+      headers,
+      ...rows,
+      [],
+      ['SUMMARY','','','','','','',(countedN+' of '+items.length+' items counted'),'','$'+totalVal.toFixed(2),'',''],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols'] = [12,34,14,8,14,12,12,13,10,14,28,10].map(w=>({wch:w}));
+    ws['!merges'] = [{s:{r:0,c:0},e:{r:0,c:11}},{s:{r:1,c:0},e:{r:1,c:11}},{s:{r:2,c:0},e:{r:2,c:11}}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Inventory Count');
+    XLSX.writeFile(wb, 'Inventory_Count_' + monthStr.replace(' ','_') + '.xlsx');
+  };
+
+  window.resetCounts = function() {
+    if (!confirm('Reset all counts and notes for a new month?\n\nYour item list and barcodes will be kept. This cannot be undone.')) return;
+    counts = {}; notes = {};
+    save();
+    alert('Counts reset. Ready for ' + monthStr + ' count.');
+    renderExportSummary();
+  };
+
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // init
+  document.getElementById('f-name').addEventListener('keydown', e => { if (e.key==='Enter') addItem(); });
+  renderItems();
+})();
+</script>
+</body>
+</html>
