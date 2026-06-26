@@ -108,6 +108,22 @@
 
   .req { color: #C0392B; margin-left: 2px; }
 
+  .optional {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gray-400);
+    margin-left: 5px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: var(--gray-400);
+    margin-top: 5px;
+    line-height: 1.45;
+  }
+
   input[type="text"],
   input[type="date"],
   input[type="number"],
@@ -389,9 +405,9 @@
     <div class="card">
       <div class="card-title">Job &amp; Vendor</div>
       <div class="field">
-        <label>Aspire Opportunity # <span class="req">*</span></label>
-        <input type="text" id="req-job" placeholder="e.g. OPP-00412" />
-        <div class="error-text" id="err-job">Required</div>
+        <label>Aspire Opportunity # <span class="optional">or OH</span></label>
+        <input type="text" id="req-job" placeholder="Enter Job # or OH" />
+        <div class="hint">Enter the Aspire Job # if it's for a job, or "OH" for overhead. Not sure? Leave it blank — final coding is confirmed on review.</div>
       </div>
       <div class="two-col">
         <div class="field">
@@ -399,11 +415,13 @@
           <select id="req-vendor">
             <option value="">Select...</option>
             <option>SiteOne</option>
+            <option>Ewing</option>
+            <option>B.L. Mullinax</option>
             <option>McHutchison</option>
-            <option>Ewing Irrigation</option>
-            <option>HD Supply</option>
             <option>Home Depot</option>
             <option>Lowe's</option>
+            <option>Uline</option>
+            <option>Sam's Club</option>
             <option>Other</option>
           </select>
           <div class="error-text" id="err-vendor">Required</div>
@@ -440,15 +458,15 @@
       <div class="urgency-grid">
         <div class="urgency-opt" data-val="Routine" data-cls="active-routine" onclick="selectUrgency(this)">
           <span class="u-label">Routine</span>
-          <span class="u-desc">Standard lead time</span>
+          <span class="u-desc">Within 48 hrs</span>
         </div>
         <div class="urgency-opt" data-val="Priority" data-cls="active-priority" onclick="selectUrgency(this)">
           <span class="u-label">Priority</span>
-          <span class="u-desc">Needed soon</span>
+          <span class="u-desc">By end of day</span>
         </div>
         <div class="urgency-opt" data-val="Urgent" data-cls="active-urgent" onclick="selectUrgency(this)">
           <span class="u-label">Urgent</span>
-          <span class="u-desc">Job is waiting</span>
+          <span class="u-desc">ASAP</span>
         </div>
       </div>
       <div class="error-text" id="err-urgency" style="margin-top:6px;">Please select an urgency level</div>
@@ -587,7 +605,6 @@ async function submitForm() {
 
   setError('req-name','err-name', !name); if (!name) valid = false;
   setError('req-date','err-date', !date); if (!date) valid = false;
-  setError('req-job','err-job', !job); if (!job) valid = false;
   setError('req-vendor','err-vendor', !vendor); if (!vendor) valid = false;
   if (vendor === 'Other') { setError('req-vendor-other','err-vendor-other', !vendorOther); if (!vendorOther) valid = false; }
   setError('req-deliver','err-deliver', !deliver); if (!deliver) valid = false;
@@ -616,7 +633,7 @@ async function submitForm() {
           { type: 'TextBlock', text: '📋 New PO Requisition — ' + refNum, weight: 'Bolder', size: 'Medium', wrap: true },
           { type: 'FactSet', facts: [
             { title: 'Requested by', value: name },
-            { title: 'Aspire Opp #', value: job },
+            { title: 'Aspire Opp #', value: job || '— assign on review' },
             { title: 'Vendor', value: vendorName },
             { title: 'Needed by', value: neededBy },
             { title: 'Deliver to', value: deliverLine },
@@ -646,7 +663,7 @@ async function submitForm() {
 
     if (res.ok || res.status === 202) {
       document.getElementById('success-screen').style.display = 'block';
-      document.getElementById('success-ref').textContent = refNum + ' · ' + vendorName + ' · ' + job;
+      document.getElementById('success-ref').textContent = refNum + ' · ' + vendorName + (job ? ' · ' + job : '');
     } else {
       document.getElementById('form-body').style.display = 'block';
       document.getElementById('err-banner').style.display = 'block';
@@ -684,3 +701,5 @@ addItem();
 </script>
 </body>
 </html>
+That's everything. In the GitHub editor, select all the old contents first (Ctrl+A on desktop, or tap-and-hold → Select All on mobile), delete, paste this in, then commit. Pages will redeploy in a minute or two.
+
